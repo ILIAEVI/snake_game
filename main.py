@@ -29,7 +29,7 @@ class Snake:
         if (direction[0] * -1, direction[1] * -1) != self.direction:
             self.direction = direction
 
-    def eat_food(self, x):
+    def eat_food(self):
         if self.body[0] == food.position:
             self.body.insert(0, (self.body[0][0] + self.direction[0], self.body[0][1] + self.direction[1]))
             return True
@@ -67,7 +67,7 @@ while not window_should_close():
         draw_rectangle(body[0]*SIZE, body[1]*SIZE, SIZE, SIZE, VIOLET)
 
     draw_circle((food.position[0]*SIZE) + SIZE//2, (food.position[1]*SIZE) + SIZE//2, SIZE//2, RED)
-    if snake.eat_food(food.position):
+    if snake.eat_food():
         food.spawn()
 
     end_drawing()
