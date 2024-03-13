@@ -2,10 +2,11 @@ from pyray import *
 from raylib import *
 import random
 
-init_window(1000, 1000, "Snake Game")
+init_window(800, 800, "Snake Game")
 set_target_fps(10)
+apple = load_texture('images/apple.png')
 
-SIZE = 100
+SIZE = 50
 
 DARK_GREEN_TILE = (30, 47, 26, 255)
 DARK_GRAY_TILE = (24, 24, 24, 255)
@@ -21,9 +22,10 @@ DIR_RIGHT = (1, 0)
 
 game_over = False
 
+
 def draw_board():
-    for i in range(10):
-        for j in range(10):
+    for i in range(16):
+        for j in range(16):
             if (i + j) % 2 == 0:
                 draw_rectangle(i * SIZE, j * SIZE, SIZE, SIZE, DARK_GREEN_TILE)
             else:
@@ -34,20 +36,16 @@ class Snake:
 
     def __init__(self):
         self.body = [[2, 0], [1, 0], [0, 0]]  # Initial Position
-        self.direction = DIR_LEFT
-        self.ops = [DIR_UP, DIR_RIGHT, DIR_RIGHT]
+        self.direction = DIR_RIGHT  # Initial direction (->)
 
     def move(self):
-        # check if snake is out of bound
-        for i in range(len(self.body)):
-            self.body[i][0] = (self.body[i][0] + self.ops[i][0]) % 10
-            self.body[i][1] = (self.body[i][1] + self.ops[i][1]) % 10
-
-        # Shift operation to right
-        for i in range(len(self.ops) - 1, 0, -1):
-            self.ops[i] = self.ops[i - 1]
-        # Append new operation
-        self.ops[0] = self.direction
+        # calculate new head
+        head = [self.body[0][0] + self.direction[0], self.body[0][1] + self.direction[1]]
+        # check if snake is out of the bound
+        head = [head[0] % 16, head[1] % 16]
+        # insert head in body and remove last part of the tail
+        self.body.insert(0, head)
+        self.body.pop()
 
     def change_direction(self, direction):
         if (direction[0] * -1, direction[1] * -1) != self.direction:
@@ -55,14 +53,9 @@ class Snake:
 
     def eat_food(self):
         if self.body[0][0] == food_position[0] and self.body[0][1] == food_position[1]:
-            new_head = [
-                (self.body[0][0] + self.ops[0][0]) % 10,
-                (self.body[0][1] + self.ops[0][1]) % 10,
-            ]
+            new_head = [self.body[0][0] + self.direction[0], self.body[0][1] + self.direction[1]]
             self.body.insert(0, new_head)
-            self.ops.insert(0, self.direction)
             return True
-
         return False
 
     def detect_collision(self):
@@ -73,7 +66,7 @@ class Snake:
 
 
 snake = Snake()
-food_position = (3, 3)
+food_position = (5, 5)
 
 while not window_should_close():
     if game_over:
@@ -98,10 +91,10 @@ while not window_should_close():
         game_over = True
 
     if snake.eat_food():
-        new_position = (random.randint(0, 9), random.randint(0, 9))
+        new_position = (random.randint(0, 15), random.randint(0, 15))
 
         while new_position in snake.body:
-            new_position = (random.randint(0, 9), random.randint(0, 9))
+            new_position = (random.randint(0, 15), random.randint(0, 15))
 
         food_position = new_position
 
@@ -109,12 +102,7 @@ while not window_should_close():
     clear_background(WHITE)
     draw_board()
 
-    draw_circle(
-        (food_position[0] * SIZE) + SIZE // 2,
-        (food_position[1] * SIZE) + SIZE // 2,
-        SIZE // 2,
-        RED,
-    )
+    draw_texture_pro(apple, Rectangle(0, 0, apple.width, apple.height),Rectangle(food_position[0] * SIZE, food_position[1] * SIZE, SIZE , SIZE), Vector2(0,0), 0, WHITE)
 
     for i in range(len(snake.body)):
         draw_rectangle(
